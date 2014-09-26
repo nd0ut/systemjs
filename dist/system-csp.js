@@ -71,7 +71,7 @@ $__global.upgradeSystemLoader = function() {
     $__global.System = System.originalSystem;
   }
 
-  
+
 /*
  * Script tag fetch
  */
@@ -152,9 +152,9 @@ function scriptLoader(loader) {
  * load.metadata.some = 'meta' will now be set on the load record.
  *
  * The same meta could be set with a my/module.js file containing:
- * 
+ *
  * my/module.js
- *   "some meta"; 
+ *   "some meta";
  *   "another meta";
  *   console.log('this is my/module');
  *
@@ -174,7 +174,7 @@ function scriptLoader(loader) {
  *
  * "format amd";
  * define(...);
- * 
+ *
  */
 
 function meta(loader) {
@@ -209,7 +209,7 @@ function meta(loader) {
         var firstChar = metaParts[i].substr(0, 1);
         if (metaParts[i].substr(len - 1, 1) == ';')
           len--;
-      
+
         if (firstChar != '"' && firstChar != "'")
           continue;
 
@@ -228,7 +228,7 @@ function meta(loader) {
     }
     // config meta overrides
     setConfigMeta(this, load);
-    
+
     return loaderTranslate.call(this, load);
   }
 }/*
@@ -241,11 +241,11 @@ function meta(loader) {
  * - Also supports metadata.deps, metadata.execute and metadata.executingRequire
  *     for handling dynamic modules alongside register-transformed ES6 modules
  *
- * Works as a standalone extension, but benefits from having a more 
+ * Works as a standalone extension, but benefits from having a more
  * advanced __eval defined like in SystemJS polyfill-wrapper-end.js
  *
  * The code here replicates the ES6 linking groups algorithm to ensure that
- * circular ES6 compiled into System.register can work alongside circular AMD 
+ * circular ES6 compiled into System.register can work alongside circular AMD
  * and CommonJS, identically to the actual ES6 loader.
  *
  */
@@ -298,7 +298,7 @@ function register(loader) {
    *    see https://github.com/ModuleLoader/es6-module-loader/wiki/System.register-Explained
    *
    * 2. System.register for dynamic modules (3-4 params) - System.register([name, ]deps, executingRequire, execute)
-   * the true or false statement 
+   * the true or false statement
    *
    * this extension implements the linking algorithm for the two variations identical to the spec
    * allowing compiled ES6 circular references to work alongside AMD and CJS circular references.
@@ -316,7 +316,7 @@ function register(loader) {
     }
 
     calledRegister = true;
-    
+
     var register;
 
     // dynamic
@@ -330,7 +330,7 @@ function register(loader) {
     }
     else {
       // ES6 declarative
-      if (deps.length > 0 && declare.length != 1)
+      if (deps.length > 0 && declare.length > 1)
         throw 'Invalid System.register form for ' + name + '. Declare function must take one argument.';
       register = {
         declarative: true,
@@ -338,13 +338,13 @@ function register(loader) {
         declare: declare
       };
     }
-    
+
     // named register
     if (name) {
       register.name = name;
       // we never overwrite an existing define
       if (!loader.defined[name])
-        loader.defined[name] = register; 
+        loader.defined[name] = register;
     }
     // anonymous register
     else if (register.declarative) {
@@ -357,7 +357,7 @@ function register(loader) {
    * Registry side table - loader.defined
    * Registry Entry Contains:
    *    - name
-   *    - deps 
+   *    - deps
    *    - declare for declarative modules
    *    - execute for dynamic modules, different to declarative execute on module
    *    - executingRequire indicates require drives execution for circularity of dynamic modules
@@ -371,7 +371,7 @@ function register(loader) {
    *    - evaluated indicating whether evaluation has happend
    *    - module the module record object, containing:
    *      - exports actual module exports
-   *      
+   *
    *    Then for declarative only we track dynamic bindings with the records:
    *      - name
    *      - setters declarative setter functions
@@ -392,7 +392,7 @@ function register(loader) {
 
     if (!loader.defined)
       loader.defined = {};
-    
+
     // script injection mode calls this function synchronously on load
     var onScriptLoad = loader.onScriptLoad;
     loader.onScriptLoad = function(load) {
@@ -400,7 +400,7 @@ function register(loader) {
       // anonymous define
       if (anonRegister)
         load.metadata.entry = anonRegister;
-      
+
       if (calledRegister) {
         load.metadata.format = load.metadata.format || 'register';
         load.metadata.registered = true;
@@ -421,17 +421,17 @@ function register(loader) {
     for (var i = 0, l = entry.normalizedDeps.length; i < l; i++) {
       var depName = entry.normalizedDeps[i];
       var depEntry = loader.defined[depName];
-      
+
       // not in the registry means already linked / ES6
       if (!depEntry || depEntry.evaluated)
         continue;
-      
+
       // now we know the entry is in our unlinked linkage group
       var depGroupIndex = entry.groupIndex + (depEntry.declarative != entry.declarative);
 
       // the group index of an entry is always the maximum
       if (depEntry.groupIndex === undefined || depEntry.groupIndex < depGroupIndex) {
-        
+
         // if already in a group, remove from the old group
         if (depEntry.groupIndex) {
           groups[depEntry.groupIndex].splice(indexOf.call(groups[depEntry.groupIndex], depEntry), 1);
@@ -469,7 +469,7 @@ function register(loader) {
         else
           linkDynamicModule(entry, loader);
       }
-      curGroupDeclarative = !curGroupDeclarative; 
+      curGroupDeclarative = !curGroupDeclarative;
     }
   }
 
@@ -507,7 +507,7 @@ function register(loader) {
       module.locked = false;
       return value;
     });
-    
+
     module.setters = declaration.setters;
     module.execute = declaration.execute;
 
@@ -573,7 +573,7 @@ function register(loader) {
     else {
       if (entry.declarative)
         ensureEvaluated(name, [], loader);
-    
+
       else if (!entry.evaluated)
         linkDynamicModule(entry, loader);
 
@@ -610,7 +610,7 @@ function register(loader) {
         return getModule(entry.normalizedDeps[i], loader);
       }
     }, exports, module);
-    
+
     if (output)
       module.exports = output;
   }
@@ -621,7 +621,7 @@ function register(loader) {
    *  (unless one is a circular dependency already in the list of seen
    *  modules, in which case we execute it)
    *
-   * Then we evaluate the module itself depth-first left to right 
+   * Then we evaluate the module itself depth-first left to right
    * execution to match ES6 modules
    */
   function ensureEvaluated(moduleName, seen, loader) {
@@ -678,7 +678,7 @@ function register(loader) {
 
     // we run the meta detection here (register is after meta)
     return Promise.resolve(loaderTranslate.call(this, load)).then(function(source) {
-      
+
       // dont run format detection for globals shimmed
       // ideally this should be in the global extension, but there is
       // currently no neat way to separate it
@@ -770,7 +770,7 @@ function register(loader) {
       return {
         deps: entry.deps,
         execute: function() {
-          // recursively ensure that the module and all its 
+          // recursively ensure that the module and all its
           // dependencies are linked (with dependency group handling)
           link(load.name, loader);
 
@@ -793,13 +793,13 @@ function register(loader) {
 /*
  * SystemJS Core
  * Code should be vaguely readable
- * 
+ *
  */
 function core(loader) {
 
   /*
     __useDefault
-    
+
     When a module object looks like:
     newModule({
       __useDefault: true,
@@ -1136,7 +1136,7 @@ function cjs(loader) {
           __dirname: dirname
         };
 
-        var source = '(function(global, exports, module, require, __filename, __dirname) { ' + load.source 
+        var source = '(function(global, exports, module, require, __filename, __dirname) { ' + load.source
           + '\n}).call(_g.exports, _g.global, _g.exports, _g.module, _g.require, _g.__filename, _g.__dirname);';
 
         // disable AMD detection
@@ -1282,20 +1282,20 @@ function amd(loader) {
 
       // remove system dependencies
       var requireIndex, exportsIndex, moduleIndex;
-      
+
       if ((requireIndex = indexOf.call(deps, 'require')) != -1) {
-        
+
         deps.splice(requireIndex, 1);
 
         var factoryText = factory.toString();
 
         deps = deps.concat(getCJSDeps(factoryText, requireIndex));
       }
-        
+
 
       if ((exportsIndex = indexOf.call(deps, 'exports')) != -1)
         deps.splice(exportsIndex, 1);
-      
+
       if ((moduleIndex = indexOf.call(deps, 'module')) != -1)
         deps.splice(moduleIndex, 1);
 
@@ -1314,10 +1314,10 @@ function amd(loader) {
           // add back in system dependencies
           if (moduleIndex != -1)
             depValues.splice(moduleIndex, 0, module);
-          
+
           if (exportsIndex != -1)
             depValues.splice(exportsIndex, 0, exports);
-          
+
           if (requireIndex != -1)
             depValues.splice(requireIndex, 0, makeRequire(module.id, require, loader));
 
@@ -1440,7 +1440,7 @@ function amd(loader) {
 }
 /*
   SystemJS map support
-  
+
   Provides map configuration through
     System.map['jquery'] = 'some/module/map'
 
@@ -1499,7 +1499,7 @@ function map(loader) {
     var tmpParentLength, tmpPrefixLength;
     var subPath;
     var nameParts;
-    
+
     // first find most specific contextual match
     if (parentName) {
       for (var p in loader.map) {
@@ -1622,7 +1622,7 @@ function plugins(loader) {
 
         // normalize the plugin name relative to the same parent
         return new Promise(function(resolve) {
-          resolve(loader.normalize(pluginName, parentName, parentAddress)); 
+          resolve(loader.normalize(pluginName, parentName, parentAddress));
         })
         // normalize the plugin argument
         .then(function(_pluginName) {
@@ -1744,7 +1744,7 @@ function plugins(loader) {
 }/*
   System bundles
 
-  Allows a bundle module to be specified which will be dynamically 
+  Allows a bundle module to be specified which will be dynamically
   loaded before trying to load a given module.
 
   For example:
@@ -1800,7 +1800,7 @@ function bundles(loader) {
   }
 }/*
   SystemJS Semver Version Addon
-  
+
   1. Uses Semver convention for major and minor forms
 
   Supports requesting a module from a package that contains a version suffix
@@ -1812,13 +1812,13 @@ function bundles(loader) {
 
   It is assumed that these modules are provided by the server / file system.
 
-  First checks the already-requested packages to see if there are any packages 
+  First checks the already-requested packages to see if there are any packages
   that would match the same package and version range.
 
   This provides a greedy algorithm as a simple fix for sharing version-managed
   dependencies as much as possible, which can later be optimized through version
   hint configuration created out of deeper version tree analysis.
-  
+
   2. Semver-compatibility syntax (caret operator - ^)
 
   Compatible version request support is then also provided for:
@@ -1832,7 +1832,7 @@ function bundles(loader) {
   The ^ symbol is always normalized out to a normal version request.
 
   This provides comprehensive semver compatibility.
-  
+
   3. System.versions version hints and version report
 
   Note this addon should be provided after all other normalize overrides.
@@ -1879,8 +1879,8 @@ function versions(loader) {
         return parseInt(v1Parts[i]) > parseInt(v2Parts[i]) ? 1 : -1;
     }
     return 0;
-  }  
-  
+  }
+
 
   loader.versions = loader.versions || {};
 
@@ -1902,7 +1902,7 @@ function versions(loader) {
 
     // run all other normalizers first
     return Promise.resolve(loaderNormalize.call(this, name, parentName, parentAddress)).then(function(normalized) {
-      
+
       var version, semverMatch, nextChar, versions;
       var index = normalized.indexOf('@');
 
@@ -1915,7 +1915,7 @@ function versions(loader) {
       }
 
       // see if this module corresponds to a package already in our versioned packages list
-      
+
       // no version specified - check against the list (given we don't know the package name)
       if (index == -1 || index == 0) {
         for (var p in packageVersions) {
@@ -1956,9 +1956,9 @@ function versions(loader) {
         // ^1 -> 1
         if (!semverMatch[2])
           minVersion = false;
-        
+
         if (!semverMatch[3]) {
-          
+
           // ^1.1 -> ^1.1.0
           if (semverMatch[2] > 0)
             semverMatch[3] = '0';
@@ -2040,10 +2040,10 @@ function versions(loader) {
 }
 /*
  * Dependency Tree Cache
- * 
- * Allows a build to pre-populate a dependency trace tree on the loader of 
+ *
+ * Allows a build to pre-populate a dependency trace tree on the loader of
  * the expected dependency tree, to be loaded upfront when requesting the
- * module, avoinding the n round trips latency of module loading, where 
+ * module, avoinding the n round trips latency of module loading, where
  * n is the dependency tree depth.
  *
  * eg:
@@ -2052,8 +2052,8 @@ function versions(loader) {
  *  'normalized': ['another'],
  *  'deps': ['tree']
  * };
- * 
- * System.import('app') 
+ *
+ * System.import('app')
  * // simultaneously starts loading all of:
  * // 'normalized', 'deps', 'another', 'tree'
  * // before "app" source is even loaded
@@ -2078,7 +2078,7 @@ function depCache(loader) {
     return loaderLocate.call(loader, load);
   }
 }
-  
+
 scriptLoader(System);
 meta(System);
 register(System);
@@ -2093,8 +2093,8 @@ versions(System);
 depCache(System);
   if (!System.paths['@traceur'])
     System.paths['@traceur'] = $__curScript && $__curScript.getAttribute('data-traceur-src')
-      || ($__curScript && $__curScript.src 
-        ? $__curScript.src.substr(0, $__curScript.src.lastIndexOf('/') + 1) 
+      || ($__curScript && $__curScript.src
+        ? $__curScript.src.substr(0, $__curScript.src.lastIndexOf('/') + 1)
         : System.baseURL + (System.baseURL.lastIndexOf('/') == System.baseURL.length - 1 ? '' : '/')
         ) + 'traceur.js';
 };
